@@ -1,6 +1,5 @@
 paths=(
     ${PWD}
-    ${VIRTUAL_ENV}/lib/python3.6/site-packages
 )
 
 for p in "${paths[@]}"; do

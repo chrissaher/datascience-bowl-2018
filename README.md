@@ -13,3 +13,9 @@ Run
 ```
 source .pythonpath
 ```
+
+To clear the PYTHONPATH
+
+```
+unset PYTHONPATH
+```
