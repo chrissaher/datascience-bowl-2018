@@ -1,0 +1,17 @@
+paths=(
+    ${PWD}
+    ${VIRTUAL_ENV}/lib/python3.6/site-packages
+)
+
+for p in "${paths[@]}"; do
+
+    if `echo -n "${PYTHONPATH}" | grep -q ${p}`; then
+        echo "INFO: ${p} is already set in PYTHONPATH correctly."
+    else
+        PYTHONPATH="${p}:${PYTHONPATH}"
+        echo "INFO: PYTHONPATH is now set to be ${PYTHONPATH}"
+    fi
+
+done
+
+export PYTHONPATH
