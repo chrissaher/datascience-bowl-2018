@@ -1,8 +1,10 @@
 # Data Folders
 data-raw/
 train-img/
+preview/
+reduced/
 
-# Byte-compiled / optimized / DLL files
+# Byte-compiled / optimßized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
