@@ -255,3 +255,7 @@ def IoU(real, pred):
     intersection = cant[3]
     union = np.sum(cant[1:])
     return intersection / union
+
+def create_folder_if_not_exists(folder_name):
+    if os.path.isdir(folder_name) == False:
+        os.makedirs(folder_name)
