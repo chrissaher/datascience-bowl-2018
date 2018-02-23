@@ -77,7 +77,7 @@ def get_train_and_labels_from_image(image, mask, rate = 0.5, padding = 50, verbo
             else:
                 if all_zeros_added == False:
                     all_zeros_added = True
-                    img_sample = image_padded[x: nx, y : ny, :] / 255.
+                    img_sample = image_padded[x: nx, y : ny, :]
                     training_examples.append(img_sample)
                     label_examples.append(np.array([0,1]))
 
@@ -148,7 +148,7 @@ def get_train_and_labels_from_image_3_classes(image, mask, rate = 0.5, padding =
             else:
                 if all_zeros_added == False:
                     all_zeros_added = True
-                    img_sample = image_padded[x: nx, y : ny, :] / 255.
+                    img_sample = image_padded[x: nx, y : ny, :]
                     training_examples.append(img_sample)
                     label_examples.append(np.array([1,0,0]))
 
@@ -236,5 +236,22 @@ def apply_padding(image_array, padding = 50):
     
     return padded_array
 
-def from_normilzed_to_image_array(padded_array):
-    return np.uint8(padded_array * 255)
+def from_normilzed_to_image_array(normalized_array):
+    return np.uint8(normalized_array * 255)
+
+def IoU(real, pred):
+    # It's expected that real and pred are in range [0,1]
+    # Get comparisson matrix (cmp)
+    # This matrix contains the following information:
+    # 0 -> 0 in mask and 0 in prediction
+    # 1 -> 0 is mask and 1 in prediction - False positive
+    # 2 -> 1 in mask and 0 in prediction - False negative
+    # 3 -> 1 in mask and 1 in prediction - True Positive
+    pred = (pred > 0) * 1
+    cmp = 2 * real + pred
+    cant = []
+    for i in range(4):
+        cant.append(np.sum((cmp == i) * 1))
+    intersection = cant[3]
+    union = np.sum(cant[1:])
+    return intersection / union
