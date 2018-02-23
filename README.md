@@ -1,4 +1,4 @@
-# datascience-bowl-2018
+# Datascience bowl 2018
 [![dep1](https://img.shields.io/badge/Keras-2.0+-blue.svg)](https://keras.io/)
 
 Personal solution for datascience bowl 2018 - kaggle.
@@ -31,11 +31,11 @@ After this, **my_test** folder will be created. Feel free to make any changes he
 ## Contributing
 To contribute with a new function, make a pull request on master branch. It will be appreciate it to upload a demo of usage too.
 
-To contribute with a new model, add it in a new notebook on the [models](https://github.com/chrissaher/datascience-bowl-2018/models) folder.
+To contribute with a new model, add it in a new notebook on the [models](https://github.com/chrissaher/datascience-bowl-2018/tree/master/models) folder.
 
-You can follow [base_model.ipynb](https://github.com/chrissaher/datascience-bowl-2018/models/base_model.ipynb) as an example.
+You can follow [base_model.ipynb](https://github.com/chrissaher/datascience-bowl-2018/tree/master/models/base_model.ipynb) as an example.
 
-Also, you MUST leave a save state of the model on [states](https://github.com/chrissaher/datascience-bowl-2018/states) folder.
+Also, you MUST leave a save state of the model on [states](https://github.com/chrissaher/datascience-bowl-2018/tree/master/states) folder.
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
