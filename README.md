@@ -17,7 +17,7 @@ Once jupter notebook is installed, you need to install the following dependencie
 
 - Keras
 
-# Run the code
+## Run the code
 Create a data-raw folder on root and copy all the data from competition
 
 ```
