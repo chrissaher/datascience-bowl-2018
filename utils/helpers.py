@@ -25,6 +25,73 @@ def get_image_mask_from_id(img_id):
 
     return image, mask
 
+def get_train_and_labels_from_image_1_class(image, mask, rate = 0.5, padding = 50, verbose = False):
+    # Rate is the rate between positive and negative examples. Expected a value [0,1]
+    # Rate = positive / negative 
+    # In algorithm, we use [0-1000] to be more precise
+    # It's assumed that image and mask are in range [0,1]
+
+    w, h, _ = image.shape
+    all_zeros_added = False
+    image_padded = apply_padding(image, padding)
+    mask_padded = apply_padding(mask, padding)
+    training_examples = []
+    label_examples = []
+
+    pos = 0
+    neg = 1
+    
+    for x in range(w):
+        for y in range(h):
+            nx = x + 2 * padding + 1
+            ny = y + 2 * padding + 1
+            sample = mask_padded[x: nx ,y : ny]
+            if np.sum(sample) > 0:
+                pos += (mask_padded[x + padding + 1][y + padding + 1] == 1)
+                neg += (mask_padded[x + padding + 1][y + padding + 1] == 0)
+    
+    real_rate = pos * 100. / neg
+    real_rate *= (rate * 10)
+    
+    pos = 0
+    neg = 1
+    
+    for x in range(w):
+        for y in range(h):
+            nx = x + 2 * padding + 1
+            ny = y + 2 * padding + 1
+            sample = mask_padded[x: nx ,y : ny]
+
+            if np.sum(sample) > 0:
+                if (mask_padded[x + padding + 1][y + padding + 1] == 0):
+                    if random.randint(0, 1000) < real_rate:
+                        img_sample = image_padded[x: nx, y : ny, :]
+                        training_examples.append(img_sample)
+                        label_examples.append(0)
+                        neg += 1
+                else:
+                    img_sample = image_padded[x: nx, y : ny, :]
+                    training_examples.append(img_sample)
+                    label_examples.append(1)
+                    pos += 1
+            else:
+                if all_zeros_added == False:
+                    all_zeros_added = True
+                    img_sample = image_padded[x: nx, y : ny, :]
+                    training_examples.append(img_sample)
+                    label_examples.append(0)
+
+    train = np.array(training_examples)
+    labels = np.array(label_examples)
+
+    if verbose: 
+        print("---------------------")
+        print("Positive examples taken : ", pos)
+        print("Negative examples taken : ", neg)
+        print("---------------------")
+        
+    return train, labels
+
 def get_train_and_labels_from_image(image, mask, rate = 0.5, padding = 50, verbose = False):
     # Rate is the rate between positive and negative examples. Expected a value [0,1]
     # Rate = positive / negative 
