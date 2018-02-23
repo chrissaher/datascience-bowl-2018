@@ -22,7 +22,6 @@ Create a data-raw folder on root and copy all the data from competition
 
 ```
 python get_started.py
-
 ```
 - **It supports python 2 and 3**
 
