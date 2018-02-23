@@ -1,8 +1,6 @@
 # Data Folders
 data-raw/
-train-img/
-preview/
-reduced/
+my_test/
 
 # Byte-compiled / optimßized / DLL files
 __pycache__/
