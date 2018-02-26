@@ -13,7 +13,7 @@ To run the project you need to install jupyter notebook:
 
 - [Jupyter Notebook installation instructions](http://jupyter.org/install).
 
-Once jupter notebook is installed, you need to install the following dependencies on it:
+Once jupyter notebook is installed, you need to install the following dependencies on it:
 
 - Keras
 
@@ -28,7 +28,7 @@ python get_started.py
 After this, **my_test** folder will be created. Feel free to make any changes here.
 
 ## Contributing
-To contribute with a new function, make a pull request on master branch. It will be appreciate it to upload a demo of usage too.
+To contribute with a new function, make a pull request on master branch. It will be appreciated if you upload a demo of usage too.
 
 To contribute with a new model, add it in a new notebook on the [models](https://github.com/chrissaher/datascience-bowl-2018/tree/master/models) folder.
 
