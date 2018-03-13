@@ -50,7 +50,7 @@ def get_train_and_labels_from_image(image, mask, rate = 1, padding = 50, verbose
                 pos += (mask_padded[x + padding + 1][y + padding + 1] == 1)
                 neg += (mask_padded[x + padding + 1][y + padding + 1] == 0)
 
-    real_rate = pos * 100. * rate
+    real_rate = pos * rate
 
     pos = 0
     neg = 1
