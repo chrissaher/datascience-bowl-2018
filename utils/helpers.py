@@ -25,6 +25,88 @@ def get_image_mask_from_id(img_id):
 
     return image, mask
 
+def get_pos_neg_examples(mask, padding):
+    w, h = mask.shape
+    mask_padded = apply_padding(mask, padding)
+    pos = 0
+    neg = 1
+    pos_positions = []
+    neg_positions = []
+
+    for x in range(w):
+        for y in range(h):
+            if mask_padded[x + padding + 1][y + padding + 1] >= 1:
+                pos += 1
+                pos_positions.append((x,y))
+            else:
+                nx = x + 2 * padding + 1
+                ny = y + 2 * padding + 1
+                sample = mask_padded[x: nx ,y : ny]
+                if np.sum(sample) > 0:
+                    neg += 0
+                    neg_positions.append((x,y))
+
+    return pos, neg, pos_positions, neg_positions
+
+def get_train_and_labels_from_image_N_classes(image, mask, num_classes = 2, rate = 1, padding = 50, verbose = False):
+    w, h, _ = image.shape
+    all_zeros_added = False
+    image_padded = apply_padding(image, padding)
+    mask_padded = apply_padding(mask, padding)
+    training_examples = []
+    label_examples = []
+    ident = np.identity(max(num_classes, 2))
+
+    pos,neg, pos_positions, neg_positions = get_pos_neg_examples(mask, padding)
+
+    real_rate = pos * rate
+
+    newpos = 0
+    newneg = 1
+
+    for (x,y) in pos_positions:
+        nx = x + 2 * padding + 1
+        ny = y + 2 * padding + 1
+        img_sample = image_padded[x: nx, y : ny, :]
+        training_examples.append(img_sample)
+        out_class = int(mask_padded[x + padding + 1][y + padding + 1])
+        label_examples.append(ident[out_class])
+        newpos += 1
+
+    random.shuffle(neg_positions)
+    for i in range(real_rate):
+        (x,y) = neg_positions[i]
+        if random.randint(0, neg) < real_rate:
+            nx = x + 2 * padding + 1
+            ny = y + 2 * padding + 1
+            img_sample = image_padded[x: nx, y : ny, :]
+            training_examples.append(img_sample)
+            label_examples.append(ident[0])
+            newneg += 1
+
+    # Add extra sample for all zeros
+    zero_sample = np.zeros((2 * padding + 1,2 * padding + 1,3))
+    training_examples.append(zero_sample)
+    label_examples.append(ident[0])
+
+    train = np.array(training_examples)
+    labels = np.array(label_examples)
+
+    if verbose:
+        print("---------------------")
+        print("Positive examples taken : ", newpos)
+        print("Negative examples taken : ", newneg)
+        print("---------------------")
+
+    return train, labels
+
+def get_train_test(image, mask, num_classes = 2, rate = 1, padding = 50, verbose = False):
+    train, labels = get_train_and_labels_from_image_N_classes(image, mask, num_classes, rate, padding, verbose)
+    if num_classes == 1:
+        train = np.argmax(train, axis = -1)
+        labels = np.argmax(labels, axis = -1)
+    return train, labels
+
 def get_train_and_labels_from_image(image, mask, rate = 1, padding = 50, verbose = False):
     # Rate is the rate between positive and negative examples. Expected a value [0,1]
     # Rate = positive / negative
@@ -38,22 +120,12 @@ def get_train_and_labels_from_image(image, mask, rate = 1, padding = 50, verbose
     training_examples = []
     label_examples = []
 
-    pos = 0
-    neg = 1
-
-    for x in range(w):
-        for y in range(h):
-            nx = x + 2 * padding + 1
-            ny = y + 2 * padding + 1
-            sample = mask_padded[x: nx ,y : ny]
-            if np.sum(sample) > 0:
-                pos += (mask_padded[x + padding + 1][y + padding + 1] == 1)
-                neg += (mask_padded[x + padding + 1][y + padding + 1] == 0)
+    pos,neg = get_pos_neg_examples(mask, padding)
 
     real_rate = pos * rate
 
-    pos = 0
-    neg = 1
+    newpos = 0
+    newneg = 1
 
     for x in range(w):
         for y in range(h):
@@ -67,12 +139,12 @@ def get_train_and_labels_from_image(image, mask, rate = 1, padding = 50, verbose
                         img_sample = image_padded[x: nx, y : ny, :]
                         training_examples.append(img_sample)
                         label_examples.append(np.array([0,1]))
-                        neg += 1
+                        newneg += 1
                 else:
                     img_sample = image_padded[x: nx, y : ny, :]
                     training_examples.append(img_sample)
                     label_examples.append(np.array([1,0]))
-                    pos += 1
+                    newpos += 1
             else:
                 if all_zeros_added == False:
                     all_zeros_added = True
@@ -85,8 +157,8 @@ def get_train_and_labels_from_image(image, mask, rate = 1, padding = 50, verbose
 
     if verbose:
         print("---------------------")
-        print("Positive examples taken : ", pos)
-        print("Negative examples taken : ", neg)
+        print("Positive examples taken : ", newpos)
+        print("Negative examples taken : ", newneg)
         print("---------------------")
 
     return train, labels
@@ -104,22 +176,12 @@ def get_train_and_labels_from_image_1_class(image, mask, rate = 1, padding = 50,
     training_examples = []
     label_examples = []
 
-    pos = 0
-    neg = 1
-
-    for x in range(w):
-        for y in range(h):
-            nx = x + 2 * padding + 1
-            ny = y + 2 * padding + 1
-            sample = mask_padded[x: nx ,y : ny]
-            if np.sum(sample) > 0:
-                pos += (mask_padded[x + padding + 1][y + padding + 1] == 1)
-                neg += (mask_padded[x + padding + 1][y + padding + 1] == 0)
+    pos,neg = get_pos_neg_examples(mask, padding)
 
     real_rate = pos * rate
 
-    pos = 0
-    neg = 1
+    newpos = 0
+    newneg = 1
 
     for x in range(w):
         for y in range(h):
@@ -133,12 +195,12 @@ def get_train_and_labels_from_image_1_class(image, mask, rate = 1, padding = 50,
                         img_sample = image_padded[x: nx, y : ny, :]
                         training_examples.append(img_sample)
                         label_examples.append(0)
-                        neg += 1
+                        newneg += 1
                 else:
                     img_sample = image_padded[x: nx, y : ny, :]
                     training_examples.append(img_sample)
                     label_examples.append(1)
-                    pos += 1
+                    newpos += 1
             else:
                 if all_zeros_added == False:
                     all_zeros_added = True
@@ -151,8 +213,8 @@ def get_train_and_labels_from_image_1_class(image, mask, rate = 1, padding = 50,
 
     if verbose:
         print("---------------------")
-        print("Positive examples taken : ", pos)
-        print("Negative examples taken : ", neg)
+        print("Positive examples taken : ", newpos)
+        print("Negative examples taken : ", newneg)
         print("---------------------")
 
     return train, labels
@@ -173,22 +235,12 @@ def get_train_and_labels_from_image_3_classes(image, mask, rate = 1, padding = 5
     training_examples = []
     label_examples = []
 
-    pos = 0
-    neg = 1
-
-    for x in range(w):
-        for y in range(h):
-            nx = x + 2 * padding + 1
-            ny = y + 2 * padding + 1
-            sample = mask_padded[x: nx ,y : ny]
-            if np.sum(sample) > 0:
-                pos += (mask_padded[x + padding + 1][y + padding + 1] == 1)
-                neg += (mask_padded[x + padding + 1][y + padding + 1] == 0)
+    pos,neg = get_pos_neg_examples(mask, padding)
 
     real_rate = pos * rate
 
-    pos = 0
-    neg = 1
+    newpos = 0
+    newneg = 1
 
     for x in range(w):
         for y in range(h):
@@ -202,7 +254,7 @@ def get_train_and_labels_from_image_3_classes(image, mask, rate = 1, padding = 5
                         img_sample = image_padded[x: nx, y : ny, :]
                         training_examples.append(img_sample)
                         label_examples.append(np.array([1,0,0]))
-                        neg += 1
+                        newneg += 1
                 else:
                     img_sample = image_padded[x: nx, y : ny, :]
                     neighbors = np.sum(mask_padded[x + padding: x + padding + 2][y + padding: y + padding + 2])
@@ -211,7 +263,7 @@ def get_train_and_labels_from_image_3_classes(image, mask, rate = 1, padding = 5
                     else: label_examples.append(np.array([0,0,1])) # Is border
                     training_examples.append(img_sample)
 
-                    pos += 1
+                    newpos += 1
             else:
                 if all_zeros_added == False:
                     all_zeros_added = True
@@ -224,8 +276,8 @@ def get_train_and_labels_from_image_3_classes(image, mask, rate = 1, padding = 5
 
     if verbose:
         print("---------------------")
-        print("Positive examples taken : ", pos)
-        print("Negative examples taken : ", neg)
+        print("Positive examples taken : ", newpos)
+        print("Negative examples taken : ", newneg)
         print("---------------------")
 
     return train, labels
@@ -248,16 +300,39 @@ def get_test_from_image(image, fixed_w =0, fixed_h = 0, padding =50):
 
     return np.array(to_predict)
 
-def from_2_mask_to_3_mask(mask):
+def from_2_mask_to_3_mask(mask, border = 1):
     w, h = mask.shape
     new_mask = np.zeros((w,h))
     for i in range(w):
         for j in range(h):
             neighbors = np.sum(mask[i - 1: i + 2, j - 1: j + 2])
             if neighbors == 9:
-                new_mask[i][j] = 2
+                new_mask[i][j] = 1
             elif neighbors > 0:
                 new_mask[i][j] = 3
+
+    dx = [-1, 0, 1, 1, 1, 0,-1,-1]
+    dy = [-1,-1,-1, 0, 1, 1, 1, 0]
+
+    level = 3
+    for t in range(border):
+        for i in range(w):
+            for j in range(h):
+                if new_mask[i][j] == level:
+                    for v in range(8):
+                        nx = i + dx[v]
+                        ny = j + dy[v]
+                        if nx > 0 and ny > 0 and nx < w and ny < h and new_mask[nx][ny] == 0:
+                            new_mask[nx][ny] = level + 1
+        level += 1
+
+    for i in range(w):
+        for j in range(h):
+            if new_mask[i][j] > 3:
+                new_mask[i][j] = 2
+            if new_mask[i][j] == 3:
+                new_mask[i][j] = 1
+
     return new_mask
 
 def apply_padding(image_array, padding = 50):
