@@ -29,7 +29,7 @@ def get_pos_neg_examples(mask, padding):
     w, h = mask.shape
     mask_padded = apply_padding(mask, padding)
     pos = 0
-    neg = 1
+    neg = 0
     pos_positions = []
     neg_positions = []
 
@@ -43,7 +43,7 @@ def get_pos_neg_examples(mask, padding):
                 ny = y + 2 * padding + 1
                 sample = mask_padded[x: nx ,y : ny]
                 if np.sum(sample) > 0:
-                    neg += 0
+                    neg += 1
                     neg_positions.append((x,y))
 
     return pos, neg, pos_positions, neg_positions
@@ -60,6 +60,7 @@ def get_train_and_labels_from_image_N_classes(image, mask, num_classes = 2, rate
     pos,neg, pos_positions, neg_positions = get_pos_neg_examples(mask, padding)
 
     real_rate = pos * rate
+    real_rate = min(real_rate, neg)
 
     newpos = 0
     newneg = 1
