@@ -1,6 +1,6 @@
 # Data Folders
 data-raw/
-my_test/
+#my_test/
 
 # Byte-compiled / optimßized / DLL files
 __pycache__/
