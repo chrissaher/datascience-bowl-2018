@@ -25,6 +25,28 @@ def get_image_mask_from_id(img_id):
 
     return image, mask
 
+def sum_mat(matrix):
+    H, W = matrix.shape
+
+    acum = np.zeros(matrix.shape)
+
+    for i in range(H):
+        if i == 0:
+            acum[i][0] = matrix[0][0]
+        else:
+            acum[i][0] = acum[i - 1][0] + matrix[i][0]
+
+    for i in range(W):
+        if i == 0:
+            acum[0][i] = matrix[0][0]
+        else:
+            acum[0][i] = acum[0][i - 1] + matrix[0][i]
+
+    for i in range(2, H):
+        for j in range(2, W):
+            acum[i][j] = acum[i - 1][j] + acum[i][j - 1] - acum[i - 1][j - 1] + matrix[i][j]
+    return acum
+
 def get_pos_neg_examples(mask, padding):
     w, h = mask.shape
     mask_padded = apply_padding(mask, padding)
@@ -33,17 +55,31 @@ def get_pos_neg_examples(mask, padding):
     pos_positions = []
     neg_positions = []
 
+    acum = sum_mat(mask_padded)
+
     for x in range(w):
         for y in range(h):
             if mask_padded[x + padding + 1][y + padding + 1] >= 1:
                 pos += 1
                 pos_positions.append((x,y))
             else:
+<<<<<<< HEAD
+                nx = x + 2 * padding
+                ny = y + 2 * padding
+
+                value = acum[nx][ny] + acum[x][y]
+                value -= (acum[nx - x][ny] + acum[nx][ny - y])
+                #sample = mask_padded[x: nx ,y : ny]
+
+                if value > 0:
+                    neg += 0
+=======
                 nx = x + 2 * padding + 1
                 ny = y + 2 * padding + 1
                 sample = mask_padded[x: nx ,y : ny]
                 if np.sum(sample) > 0:
                     neg += 1
+>>>>>>> 890319a8e00c41fea5e8af9831be4a9d4c97b0c4
                     neg_positions.append((x,y))
 
     return pos, neg, pos_positions, neg_positions
